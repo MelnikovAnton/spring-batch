@@ -1,4 +1,4 @@
-package ru.melnikov.springbatch.model;
+package ru.melnikov.springbatch.model.mongo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

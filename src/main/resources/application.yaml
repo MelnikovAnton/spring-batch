@@ -3,4 +3,10 @@ spring:
     mongodb:
       uri: mongodb://localhost
       port: 27017
-      database: library
+      database: TestBatch
+
+
+
+  batch:
+    job:
+      enabled: false
