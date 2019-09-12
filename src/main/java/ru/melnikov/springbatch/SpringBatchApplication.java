@@ -15,7 +15,7 @@ import java.util.List;
 
 
 @SpringBootApplication
-@EnableBatchProcessing
+@EnableBatchProcessing(modular=true)
 public class SpringBatchApplication {
 
 	public static void main(String[] args) throws SQLException {

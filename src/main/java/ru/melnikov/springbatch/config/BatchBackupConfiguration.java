@@ -3,9 +3,12 @@ package ru.melnikov.springbatch.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.DuplicateJobException;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.support.ReferenceJobFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
@@ -37,6 +40,8 @@ import java.util.stream.Collectors;
 public class BatchBackupConfiguration {
 
     private final JobBuilderFactory jobBuilderFactory;
+
+    private final JobRegistry jobRegistry;
 
     private final StepBuilderFactory stepBuilderFactory;
 
@@ -217,14 +222,18 @@ public class BatchBackupConfiguration {
     }
 
     @Bean
-    public Job saveAllBooksToDB(Step saveBookStep, Step saveGenreStep, Step saveAuthorStep,Step saveCommentStep) {
-        return jobBuilderFactory.get("saveAllBooksToDB")
+    public Job saveAllBooksToDB(Step saveBookStep, Step saveGenreStep, Step saveAuthorStep,Step saveCommentStep) throws DuplicateJobException {
+        Job job = jobBuilderFactory.get("saveAllBooksToDB")
                 .incrementer(new RunIdIncrementer())
                 .start(saveAuthorStep)
                 .next(saveGenreStep)
                 .next(saveBookStep)
                 .next(saveCommentStep)
                 .build();
+
+        ReferenceJobFactory referenceJobFactory = new ReferenceJobFactory(job);
+        jobRegistry.register(referenceJobFactory);
+        return job;
     }
 
 }
