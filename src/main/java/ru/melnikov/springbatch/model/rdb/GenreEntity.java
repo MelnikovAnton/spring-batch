@@ -1,4 +1,4 @@
-package ru.melnikov.springbatch.model.sql;
+package ru.melnikov.springbatch.model.rdb;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,8 +12,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Author")
-public class AuthorSql {
+@Table(name = "Genre")
+public class GenreEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class AuthorSql {
     @Column
     private String mongoId;
 
-    public AuthorSql(String name) {
+    public GenreEntity(String name) {
         this.name = name;
     }
 }

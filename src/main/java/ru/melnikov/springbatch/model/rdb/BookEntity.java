@@ -1,4 +1,4 @@
-package ru.melnikov.springbatch.model.sql;
+package ru.melnikov.springbatch.model.rdb;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @Table(name = "Book")
-public class BookSql {
+public class BookEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class BookSql {
             inverseJoinColumns = {@JoinColumn(name = "author_id")}
     )
     @Fetch(FetchMode.SUBSELECT)
-    private Set<AuthorSql> authors = new HashSet<>();
+    private Set<AuthorEntity> authors = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -38,7 +38,7 @@ public class BookSql {
             inverseJoinColumns = {@JoinColumn(name = "genre_id")}
     )
     @Fetch(FetchMode.JOIN)
-    private Set<GenreSql> genres = new HashSet<>();
+    private Set<GenreEntity> genres = new HashSet<>();
 
     @Column
     private String contentPath;
@@ -46,22 +46,22 @@ public class BookSql {
     @Column
     private String mongoId;
 
-    public BookSql(long id, String title, String contentPath) {
+    public BookEntity(long id, String title, String contentPath) {
         this.id = id;
         this.title = title;
         this.contentPath = contentPath;
     }
 
-    public BookSql(String title, String contentPath) {
+    public BookEntity(String title, String contentPath) {
         this.title = title;
         this.contentPath = contentPath;
     }
 
-    public void addAuthor(AuthorSql author) {
+    public void addAuthor(AuthorEntity author) {
         this.authors.add(author);
     }
 
-    public void addGenre(GenreSql genre) {
+    public void addGenre(GenreEntity genre) {
         this.genres.add(genre);
     }
 }

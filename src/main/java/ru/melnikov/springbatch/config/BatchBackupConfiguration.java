@@ -5,7 +5,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.DuplicateJobException;
 import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory;
@@ -22,16 +21,16 @@ import ru.melnikov.springbatch.model.mongo.Author;
 import ru.melnikov.springbatch.model.mongo.Book;
 import ru.melnikov.springbatch.model.mongo.Comment;
 import ru.melnikov.springbatch.model.mongo.Genre;
-import ru.melnikov.springbatch.model.sql.AuthorSql;
-import ru.melnikov.springbatch.model.sql.BookSql;
-import ru.melnikov.springbatch.model.sql.CommentSql;
-import ru.melnikov.springbatch.model.sql.GenreSql;
+import ru.melnikov.springbatch.model.rdb.AuthorEntity;
+import ru.melnikov.springbatch.model.rdb.BookEntity;
+import ru.melnikov.springbatch.model.rdb.CommentEntity;
+import ru.melnikov.springbatch.model.rdb.GenreEntity;
 import ru.melnikov.springbatch.repository.AuthorRepository;
 import ru.melnikov.springbatch.repository.BookRepository;
 import ru.melnikov.springbatch.repository.CommentsRepository;
 import ru.melnikov.springbatch.repository.GenreRepository;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
@@ -61,7 +60,7 @@ public class BatchBackupConfiguration {
                 .template(mongoTemplate)
                 .targetType(Book.class)
                 .jsonQuery("{}")
-                .sorts(new HashMap<>())
+                .sorts(Collections.emptyMap())
                 .build();
     }
 
@@ -72,7 +71,7 @@ public class BatchBackupConfiguration {
                 .template(mongoTemplate)
                 .targetType(Author.class)
                 .jsonQuery("{}")
-                .sorts(new HashMap<>())
+                .sorts(Collections.emptyMap())
                 .build();
     }
 
@@ -83,7 +82,7 @@ public class BatchBackupConfiguration {
                 .template(mongoTemplate)
                 .targetType(Genre.class)
                 .jsonQuery("{}")
-                .sorts(new HashMap<>())
+                .sorts(Collections.emptyMap())
                 .build();
     }
 
@@ -94,27 +93,27 @@ public class BatchBackupConfiguration {
                 .template(mongoTemplate)
                 .targetType(Comment.class)
                 .jsonQuery("{}")
-                .sorts(new HashMap<>())
+                .sorts(Collections.emptyMap())
                 .build();
     }
 
     @Bean("commentProcessor")
-    public ItemProcessor saveCommentProcessor() {
-        return (ItemProcessor<Comment, CommentSql>) comment -> {
-            CommentSql commentSql = new CommentSql();
-            commentSql.setMongoId(comment.getId());
-            BookSql book = bookRepository.findByMongoId(comment.getBook().getId());
-            commentSql.setBook(book);
-            commentSql.setComment(comment.getComment());
-            return commentSql;
+    public ItemProcessor<Comment, CommentEntity> saveCommentProcessor() {
+        return comment -> {
+            CommentEntity commentEntity = new CommentEntity();
+            commentEntity.setMongoId(comment.getId());
+            BookEntity book = bookRepository.findByMongoId(comment.getBook().getId());
+            commentEntity.setBook(book);
+            commentEntity.setComment(comment.getComment());
+            return commentEntity;
         };
     }
 
 
     @Bean("bookProcessor")
-    public ItemProcessor saveBookProcessor() {
-        return (ItemProcessor<Book, BookSql>) book -> {
-            BookSql sqlBook = new BookSql(book.getTitle(), book.getContentPath());
+    public ItemProcessor<Book, BookEntity> saveBookProcessor() {
+        return book -> {
+            BookEntity sqlBook = new BookEntity(book.getTitle(), book.getContentPath());
             sqlBook.setMongoId(book.getId());
             sqlBook.setAuthors(authorRepository.findAllByMongoId(book.getAuthors().stream()
                     .map(Author::getId)
@@ -127,58 +126,58 @@ public class BatchBackupConfiguration {
     }
 
     @Bean("authorProcessor")
-    public ItemProcessor saveAuthorProcessor() {
-        return (ItemProcessor<Author, AuthorSql>) author -> {
-            AuthorSql authorSql = new AuthorSql(author.getName());
-            authorSql.setMongoId(author.getId());
-            return authorSql;
+    public ItemProcessor<Author, AuthorEntity> saveAuthorProcessor() {
+        return author -> {
+            AuthorEntity authorEntity = new AuthorEntity(author.getName());
+            authorEntity.setMongoId(author.getId());
+            return authorEntity;
         };
     }
 
     @Bean("genreProcessor")
-    public ItemProcessor saveGenreProcessor() {
-        return (ItemProcessor<Genre, GenreSql>) genre -> {
-            GenreSql genreSql = new GenreSql(genre.getName());
-            genreSql.setMongoId(genre.getId());
-            return genreSql;
+    public ItemProcessor<Genre, GenreEntity> saveGenreProcessor() {
+        return genre -> {
+            GenreEntity genreEntity = new GenreEntity(genre.getName());
+            genreEntity.setMongoId(genre.getId());
+            return genreEntity;
         };
     }
 
 
     @Bean
-    public ItemWriter<BookSql> bookSqlItemWriter() {
-        return new RepositoryItemWriterBuilder<BookSql>()
+    public ItemWriter<BookEntity> bookSqlItemWriter() {
+        return new RepositoryItemWriterBuilder<BookEntity>()
                 .repository(bookRepository)
                 .methodName("save")
                 .build();
     }
 
     @Bean
-    public ItemWriter<AuthorSql> authorSqlItemWriter() {
-        return new RepositoryItemWriterBuilder<AuthorSql>()
+    public ItemWriter<AuthorEntity> authorSqlItemWriter() {
+        return new RepositoryItemWriterBuilder<AuthorEntity>()
                 .repository(authorRepository)
                 .methodName("save")
                 .build();
     }
 
     @Bean
-    public ItemWriter<GenreSql> genreSqlItemWriter() {
-        return new RepositoryItemWriterBuilder<GenreSql>()
+    public ItemWriter<GenreEntity> genreSqlItemWriter() {
+        return new RepositoryItemWriterBuilder<GenreEntity>()
                 .repository(genreRepository)
                 .methodName("save")
                 .build();
     }
 
     @Bean
-    public ItemWriter<CommentSql> commentSqlItemWriter() {
-        return new RepositoryItemWriterBuilder<CommentSql>()
+    public ItemWriter<CommentEntity> commentSqlItemWriter() {
+        return new RepositoryItemWriterBuilder<CommentEntity>()
                 .repository(commentsRepository)
                 .methodName("save")
                 .build();
     }
 
     @Bean
-    public Step saveAuthorStep(ItemWriter<AuthorSql> writer, ItemReader<Author> reader, ItemProcessor authorProcessor) {
+    public Step saveAuthorStep(ItemWriter<AuthorEntity> writer, ItemReader<Author> reader, ItemProcessor authorProcessor) {
         return stepBuilderFactory.get("backupAuthor")
                 .allowStartIfComplete(true)
                 .chunk(5)
@@ -189,7 +188,7 @@ public class BatchBackupConfiguration {
     }
 
     @Bean
-    public Step saveGenreStep(ItemWriter<GenreSql> writer, ItemReader<Genre> reader, ItemProcessor genreProcessor) {
+    public Step saveGenreStep(ItemWriter<GenreEntity> writer, ItemReader<Genre> reader, ItemProcessor genreProcessor) {
         return stepBuilderFactory.get("backupGenre")
                 .allowStartIfComplete(true)
                 .chunk(5)
@@ -200,7 +199,7 @@ public class BatchBackupConfiguration {
     }
 
     @Bean
-    public Step saveBookStep(ItemWriter<BookSql> writer, ItemReader<Book> reader, ItemProcessor bookProcessor) {
+    public Step saveBookStep(ItemWriter<BookEntity> writer, ItemReader<Book> reader, ItemProcessor bookProcessor) {
         return stepBuilderFactory.get("backupBook")
                 .allowStartIfComplete(true)
                 .chunk(5)
@@ -211,7 +210,7 @@ public class BatchBackupConfiguration {
     }
 
     @Bean
-    public Step saveCommentStep(ItemWriter<CommentSql> writer, ItemReader<Comment> reader, ItemProcessor commentProcessor) {
+    public Step saveCommentStep(ItemWriter<CommentEntity> writer, ItemReader<Comment> reader, ItemProcessor commentProcessor) {
         return stepBuilderFactory.get("backupComments")
                 .allowStartIfComplete(true)
                 .chunk(5)

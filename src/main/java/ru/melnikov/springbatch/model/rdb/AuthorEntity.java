@@ -1,32 +1,29 @@
-package ru.melnikov.springbatch.model.sql;
+package ru.melnikov.springbatch.model.rdb;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
 
+@Slf4j
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Comment")
-public class CommentSql {
+@Table(name = "Author")
+public class AuthorEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private BookSql book;
     @Column
-    private String comment;
-
+    private String name;
     @Column
     private String mongoId;
 
-    public CommentSql(BookSql book, String comment) {
-        this.book = book;
-        this.comment = comment;
+    public AuthorEntity(String name) {
+        this.name = name;
     }
 }
