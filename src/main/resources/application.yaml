@@ -1,1 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost
+      port: 27017
+      database: TestBatch
 
+
+
+  batch:
+    job:
+      enabled: false
